@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>One-View 3D Completion</title>
+  <meta name="description" content="One scan file in, one completed 3D object out: predicts the full shape of an object from a single one-sided depth (ToF) scan. Runs entirely on your device.">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <h1>One-View 3D Completion</h1>
+      <p class="lede"><b>One scan file in, one completed object out.</b> A depth sensor only sees the <b>front</b> of an object.
+        This app finds the object in a single scan file and predicts its <b>full 3D shape, including the hidden back</b>.
+        It never combines several files. Everything runs on your device; nothing is uploaded.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="model-status" class="card status" aria-live="polite">
+      <div class="status-row"><span id="status-text">Loading the AI model…</span><span id="status-pct"></span></div>
+      <div class="bar"><div id="bar-fill"></div></div>
+      <p class="hint" id="dl-hint">One-time download of about 140 MB. After that it's cached and starts much faster.</p>
+    </section>
+
+    <section id="model-note" class="card notice" aria-live="polite">Loading model details…</section>
+
+    <section class="card">
+      <h2>1. Pick a sample scan</h2>
+      <div id="samples" class="samples"></div>
+      <h2 class="mt">…or try your own scan</h2>
+      <div class="upload-row">
+        <label class="file">
+          <input id="file" type="file" accept=".npy,.ply,.xyz,.txt,.csv">
+          <span>Choose file (.npy, .ply, .xyz)</span>
+        </label>
+      </div>
+      <p class="hint">Use <b>one</b> processed export from the device viewer (<code>scan_*_shapenet.npy</code>: 4096 × 3, centred and divided by the
+        largest coordinate; y = up, sensor looking along +z). Other point clouds load too, but the position of the sensor
+        can then not be recovered and the distance and angle show “not recoverable”.</p>
+    </section>
+
+    <section id="result" class="card hidden">
+      <div class="result-head">
+        <h2 id="r-title">Result</h2>
+        <span id="r-chip" class="chip"></span>
+      </div>
+      <p id="r-stats" class="stats"></p>
+      <p id="r-label-note" class="muted label-note"></p>
+      <div class="geo">
+        <h3>What this one scan says about the object’s position</h3>
+        <div id="geo-rows"></div>
+        <p class="hint">Shown only when the 8 background stripes of the sensor were found and fitted in this file; otherwise “not recoverable”.
+          This is a <b>rough</b> estimate: on simulated scans the relative distance was typically off by a factor of about 1.5 and by several times when
+          the object was held within ~10 cm of the sensor, and the angle is coarse (the hand moves while scanning).
+          The “fitted” flag does not guarantee the numbers are accurate.</p>
+      </div>
+      <div class="legend">
+        <span><i class="dot seen"></i>What the sensor saw</span>
+        <span><i class="dot pred" id="legend-pred"></i>Predicted complete object</span>
+        <span class="muted">Drag to rotate · scroll or pinch to zoom</span>
+      </div>
+      <div class="plots">
+        <figure><figcaption>Object close-up</figcaption><div id="plot-object" class="plot"></div></figure>
+        <figure><figcaption>Whole scene <label class="inline"><input id="show-bg" type="checkbox" checked> show background</label></figcaption><div id="plot-scene" class="plot"></div></figure>
+      </div>
+      <div class="downloads">
+        <button id="dl-ply" class="btn">Download object (.ply)</button>
+        <button id="dl-npy" class="btn">Download object (.npy)</button>
+        <button id="dl-scene" class="btn ghost">Download scene (.ply)</button>
+      </div>
+    </section>
+
+    <section class="card about">
+      <h2>About</h2>
+      <p><b>One file, one object.</b> The model gets a single scan file and returns one completed object. Files are never fused,
+        and the sample labels (“Red bottle”, “Blue bottle”, “Box”) are only what the person who scanned them said they show:
+        they are not given to the model and are not predictions.</p>
+      <p>The model is <a href="https://github.com/yuxumin/PoinTr" target="_blank" rel="noopener">AdaPoinTr</a>
+        (Yu et al., IEEE TPAMI 2023), starting from the authors’ official PCN weights and fine-tuned only on simulated hand-held
+        time-of-flight scans with their true complete shapes. The 10 real sample scans are a <b>test set</b>: they were never used for
+        training, tuning or model selection.</p>
+      <p><b>What the file keeps and what it loses.</b> The device exports 4096 points centred and divided by the largest coordinate, so the metric
+        size and distance are gone and cannot be recovered. What survives is the geometry seen from the sensor: the background wall shows the
+        sensor’s 8 columns as stripes at known angles, which locates the sensor inside the file. From that the page derives the object’s distance
+        relative to the background and its angular size, and puts the object in a distance-consistent frame (“object-distance units”, not centimetres)
+        before the model sees it. The same preprocessing code runs here and in Python, and <code>?selftest</code> checks they agree.</p>
+      <p class="muted"><b>Limits.</b> The real scans were taken from one viewpoint with the object held very close, so each file sees only a small
+        patch of the object (a few hundred noisy points), and hand motion smears it. Completions of real scans are therefore rough and can be
+        wrong; the hidden back is always a prediction, never a measurement. The distance and angle estimates are approximate and are marked
+        “not recoverable” whenever the stripes cannot be fitted.</p>
+    </section>
+  </main>
+
+  <script src="vendor/ort.wasm.min.js"></script>
+  <script src="vendor/plotly.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+[
+ {
+  "file": "scan_20261015_132356_shapenet.npy",
+  "user_label": "Red bottle"
+ },
+ {
+  "file": "scan_20261015_132816_shapenet.npy",
+  "user_label": "Red bottle"
+ },
+ {
+  "file": "scan_20261015_133832_shapenet.npy",
+  "user_label": "Red bottle"
+ },
+ {
+  "file": "scan_20261015_134311_shapenet.npy",
+  "user_label": "Red bottle"
+ },
+ {
+  "file": "scan_20261015_135157_shapenet.npy",
+  "user_label": "Blue bottle"
+ },
+ {
+  "file": "scan_20261015_135527_shapenet.npy",
+  "user_label": "Blue bottle"
+ },
+ {
+  "file": "scan_20261015_140131_shapenet.npy",
+  "user_label": "Blue bottle"
+ },
+ {
+  "file": "scan_20261015_140908_shapenet.npy",
+  "user_label": "Box"
+ },
+ {
+  "file": "scan_20261015_141027_shapenet.npy",
+  "user_label": "Box"
+ },
+ {
+  "file": "scan_20261015_141202_shapenet.npy",
+  "user_label": "Box"
+ }
+]
